@@ -4,11 +4,11 @@
 #show: gipsa-theme.with(
   aspect-ratio: "16-9",
   config-info(
-    title: [A not so long title],
+    title: [Main title of the talk],
     short-title: [Short title 1],
     subtitle: [Subtitle 1],
     author: [Author 1],
-    institution: [GIPSA-Lab, UMR 5216 CNRS UGA],
+    institution: [GIPSA-Lab, UMR 5216 CNRS UGA Grenoble-inp],
     date: datetime.today().display("[year]-[month]-[day]"),
   ),
 )

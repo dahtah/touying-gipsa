@@ -3,11 +3,12 @@ name = "touying-gipsa"
 version = "0.1.0"
 entrypoint = "src/lib.typ"
 authors = [
-  "Enzo Doyen <https://edoyen.com/>"
+  "Simon Barthelmé (maintainer)",
+  "Enzo Doyen (original author)"
 ]
 license = "MIT"
-description = "Touying theme for Gipsa-lab (UMR 5216, CNRS / UGA / Grenoble INP), adapted from touying-unistra-pristine and the official Gipsa-lab Beamer template"
-repository = "https://github.com/spidersouris/touying-gipsa"
+description = "Touying theme for Gipsa-lab (UMR 5216, CNRS / UGA / Grenoble INP), adapted from touying-unistra by Enzo Doyen and the official Gipsa-lab Beamer template"
+repository = "https://github.com/dahtah/touying-gipsa"
 keywords = ["touying", "gipsa", "gipsa-lab", "presentation", "slides", "diaporama", "lecture", "university", "cnrs", "uga"]
 categories = ["presentation"]
 disciplines = []
