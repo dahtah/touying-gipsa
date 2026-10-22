@@ -1,29 +1,19 @@
-#import "@preview/touying:0.6.2": *
-#import "@preview/touying-unistra-pristine:1.4.3": *
+#import "@preview/touying:0.8.0": *
+#import "../src/lib.typ": *
 
-#show: unistra-theme.with(
+#show: gipsa-theme.with(
   aspect-ratio: "16-9",
   config-info(
-    title: [Title],
-    author: [Author],
-    date: datetime.today().display("[month repr:long] [day], [year repr:full]"),
-    logo: image("../assets/unistrafooter.svg"),
-  ),
-  config-store(
-    quotes: (
-      left: "‘",
-      right: "’",
-    ),
-    icon-links: (
-      "image": (
-        regex("\.(jpg|jpeg|png|bmp|svg|webp|tiff)$"),
-        none,
-      ),
-    ),
+    title: [A not so long title],
+    short-title: [Short title 1],
+    subtitle: [Subtitle 1],
+    author: [Author 1],
+    institution: [GIPSA-Lab, UMR 5216 CNRS UGA],
+    date: datetime.today().display("[year]-[month]-[day]"),
   ),
 )
 
-#title-slide(logo: image("../assets/unistra.svg"))
+#title-slide()
 
 = Example Section Title
 
@@ -33,112 +23,74 @@ A slide with *important information*.
 
 #pause
 
+...and some more information revealed with `#pause`.
+
 === Highlight
-This is #highlight(fill: blue.C)[highlighted in blue]. This is #highlight(fill: yellow.C)[highlighted in yellow]. This is #highlight(fill: green.C)[highlighted in green]. This is #highlight(fill: red.C)[highlighted in red].
 
-#hero(
-  image("../assets/unistra.svg"),
-  title: "Hero",
-  subtitle: "Subtitle",
-  hide-footer: false,
-)
+This is #highlight(fill: blue.lighten(80%))[highlighted in blue]. This is #highlight(fill: yellow.lighten(80%))[highlighted in yellow]. This is #highlight(fill: green.lighten(80%))[highlighted in green]. This is #highlight(fill: red.lighten(80%))[highlighted in red].
 
-#hero(
-  image("../assets/cat1.jpg", width: 100%, height: 100%),
-  txt: (
-    text: "This is an "
-      + highlight(
-        fill: yellow.C,
-      )[RTL#footnote[RTL = right to left. Oh, and here's a footnote!] hero with text and no title]
-      + ".\n",
-    enhanced: false,
-  ),
-  direction: "rtl",
-  footnote: true,
-)
+== Itemize
 
-#gallery(
-  image("../assets/cat1.jpg", width: auto, height: 50%),
-  image("../assets/cat2.jpg", width: auto, height: 50%),
-  image("../assets/cat1.jpg", width: auto, height: 50%),
-  image("../assets/cat2.jpg", width: auto, height: 50%),
-  title: "Gallery",
-  captions: (
-    "Cat 1",
-    "Cat 2",
-    "Cat 1 again",
-    "Cat 2 again",
-  ),
-  columns: 4,
-)
+- Item with depth 1
+  - Item with depth 2
+    - Item with depth 3
+- Item with depth 1
 
-#focus-slide(
-  theme: "smoke",
-  [
-    This is a focus slide \ with theme "smoke"
-  ],
-)
+== Enumerate
 
-#focus-slide(
-  theme: "neon",
-  icon: nv-icon("text-undo"),
-  [
-    This is a focus slide \ with theme "neon" and Nova icon "text-undo"
-  ],
-)
++ Item
++ Item
+  + Sub-item
++ Item
 
-#focus-slide(
-  theme: "yellow",
-  icon: us-icon("book-open"),
-  [
-    This is a focus slide \ with theme "yellow" and Unistra icon "book-open"
-  ],
-)
+== Blocks
 
-#focus-slide(
-  c1: black,
-  c2: white,
-  icon: us-icon("plant"),
-  [
-    This is a focus slide \ with custom colors \ and Unistra icon "plant"
-    \ Next: Section 2
-  ],
-  text-color: yellow.D,
-)
-
-= Section 2
-
-== Hey! New Section!
-
-#lorem(30)
-
-=== Heading 3
-
-#lorem(10)
-
-==== Heading 4
-
-#lorem(80)
-
-#quote(
-  attribution: [from the Henry Cary literal translation of 1897 | *Noticed the custom quotes?*],
-)[
-  ... I seem, then, in just this little thing to be wiser than this man at
-  any rate, that what I do not know I do not think I know either.
+#block[
+  A normal block. #lorem(10)
 ]
+
+#block(fill: red.lighten(90%), stroke: red)[
+  An "alert" block, in gipsa red.
+]
+
+#block(fill: blue.lighten(90%), stroke: blue)[
+  An "example" block, in gipsa blue.
+]
+
+#quote(attribution: [Someone], [
+  A quote, with the custom French quotation marks.
+])
 
 #slide[
-  First column. #lorem(15)
+  First column. #lorem(10)
 ][
-  Second column. #lorem(15)
+  Second column. #lorem(10)
 ]
 
-== Icon Links
+#focus-slide(theme: "blue")[
+  A focus slide with theme "blue"
+]
 
-https://i.edoyen.com/ShareX/2025/07/ky3Hdt.gif
+#focus-slide(theme: "red")[
+  A focus slide with theme "red"
+]
 
-#link("https://i.edoyen.com/ShareX/2025/07/ky3Hdt.gif")[with \#link]
+= Second Section
 
-https://i.edoyen.com/ShareX/2025/07/ky3Hdt.gif
+== Outline
 
-https://i.edoyen.com/ShareX/2025/07/ky3Hdt.jpg
+#outline-slide()
+
+== Links
+
+#link("https://www.gipsa-lab.grenoble-inp.fr")[Gipsa-lab website]
+
+#show: appendix
+
+== Rescue Slide 1
+
+A rescue slide, after `#show: appendix`.
+
+== Rescue Slide 2
+
+Note the appendix label in the footer.

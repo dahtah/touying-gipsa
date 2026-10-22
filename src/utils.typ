@@ -25,8 +25,8 @@
 #let _gradientize(
   self,
   body,
-  c1: nblue.E,
-  c2: nblue.E,
+  c1: dark,
+  c2: dark,
   lighten-pct: 20%,
   angle: 45deg,
 ) = {
@@ -85,10 +85,10 @@
 
 /// Makes text smaller
 #let smaller = it => {
-  text(size: 25pt, it)
+  text(size: 17pt, it)
 }
 
 /// Makes text smallest
 #let smallest = it => {
-  text(size: 20pt, it)
+  text(size: 14pt, it)
 }

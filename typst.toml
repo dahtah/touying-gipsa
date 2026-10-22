@@ -1,18 +1,17 @@
 [package]
-name = "touying-unistra-pristine"
-version = "1.4.3"
+name = "touying-gipsa"
+version = "0.1.0"
 entrypoint = "src/lib.typ"
 authors = [
   "Enzo Doyen <https://edoyen.com/>"
 ]
 license = "MIT"
-description = "Touying theme adhering to the core principles of the style guide of the University of Strasbourg, France"
-# homepage = ""
-repository = "https://github.com/spidersouris/touying-unistra-pristine"
-keywords = ["touying", "unistra", "strasbourg", "presentation", "slides", "diaporama", "lecture", "university", "theme"]
+description = "Touying theme for Gipsa-lab (UMR 5216, CNRS / UGA / Grenoble INP), adapted from touying-unistra-pristine and the official Gipsa-lab Beamer template"
+repository = "https://github.com/spidersouris/touying-gipsa"
+keywords = ["touying", "gipsa", "gipsa-lab", "presentation", "slides", "diaporama", "lecture", "university", "cnrs", "uga"]
 categories = ["presentation"]
 disciplines = []
-compiler = "0.14.2"
+compiler = "0.15.0"
 exclude = []
 
 [template]

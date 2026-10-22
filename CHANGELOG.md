@@ -1,3 +1,32 @@
+# Unreleased
+
+## PowerPoint template alignment (16:9)
+
+- Title slide rewritten to match the official Gipsa-lab PowerPoint template (`template.pptx`): centered white title block (title, subtitle, author, institution) instead of a left-aligned one, date moved to the bottom left of the white strip, partner logos resized/positioned like the template (bottom right of the strip).
+- New 16:9 background images extracted from the PowerPoint template (`fond_titre_16x9.png`, `fond_titre_long_16x9.png`), used automatically on 16:9 decks. The white strip at the bottom of the title slide is now 9.07% of the page height (was 12%). The main logo no longer needs a white box on 16:9 (it sits inside the white corner of the 16:9 fond); the white box is kept for 4:3 decks.
+- Logo images replaced with the exact files from the PowerPoint template (`logoGipsalab_alpha_lr.png`, `logoINPG_alpha.png`, `logoUGA_alpha.png`), so their proportions match the template.
+- Default font is now Carlito (metrically compatible with Calibri, the font of the PowerPoint template), with Calibri/Liberation Sans/DejaVu Sans fallbacks.
+
+# v0.1.0 (2026-10-16)
+
+First draft of the Gipsa-lab adaptation, forked from touying-unistra-pristine v1.4.3.
+
+## General
+
+- Updated to Typst 0.15.0.
+- Updated to Touying 0.8.0.
+
+## Gipsa-lab adaptation
+
+- Replaced the Unistra palette with the Gipsa-lab palette (dark blue `#16223A`, red `#BE1B20`, yellow `#ED7D20`, blue `#22AEE2`, green `#32A855`).
+- New title slide in the style of the official Beamer template: "fond" background, main logo on a white box, white title block, CNRS / INPG / UGA logos in the white bottom strip.
+- New footline: "bandeau" with white author/short-title and slide number, CNRS / INPG / UGA logos on the right.
+- Frame titles: Gipsa-lab logo + title in the Gipsa dark blue.
+- Focus slide themes built from the Gipsa colors (`blue`, `red`, `green`, `night`, `sunrise`, `glacier`, `forest`, `ember`).
+- Institution support on the title slide (`config-info(institution: ..)`).
+- Link icons disabled by default (Unistra icon fonts not available).
+- Theme renamed: `unistra-theme` -> `gipsa-theme`, `src/unistra.typ` -> `src/gipsa.typ`.
+
 # v1.4.3 (2026-03-06)
 
 ## General

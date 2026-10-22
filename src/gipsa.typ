@@ -1,10 +1,76 @@
-#import "@preview/touying:0.6.2": *
+#import "@preview/touying:0.8.0": *
 #import "@preview/fontawesome:0.6.0": fa-icon
 #import "colors.typ": *
 #import "icons.typ": *
 #import "utils.typ": *
 
-#let unistra-nav-bar(self) = {
+// Path (relative to this file) containing the Gipsa-lab logos and backgrounds.
+// Original assets come from the official Gipsa-lab Beamer template.
+#let _assets-dir = "../assets/gipsa"
+
+// Height of the footline strip. The Beamer template uses ~5 mm on a 96 mm
+// high page (~5%); we use a slightly taller strip for readability.
+#let _footer-height = 8mm
+
+/// Gipsa-lab footline: colored "bandeau" with author/title and page number
+/// (white text), and the CNRS / INPG / UGA logos on its right.
+#let _gipsa-footer(self) = {
+  let dir = self.store.assets-dir
+
+  let title = self.info.title
+  if self.info.at("short-title", default: auto) != auto {
+    title = self.info.short-title
+  }
+
+  let author = self.info.author
+  if self.store.footer-hide.contains("author") {
+    author = none
+  }
+
+  set text(size: 7.5pt)
+
+  // inset the footline from the page edges, like the Beamer template
+  pad(left: 10mm, right: 4mm, grid(
+    columns: (1fr, auto, auto, auto),
+    column-gutter: 1em,
+    align: horizon,
+
+    // bandeau with overlaid white text
+    box(width: 100%, height: _footer-height, clip: true, {
+      place(
+        image(dir + "/bandeau_court_4x3.png", width: 100%, height: 100%, fit: "stretch"),
+      )
+      place(
+        left + horizon,
+        dx: 1.2em,
+        text(fill: white, {
+          if _is(author) { author }
+          if _is(author) and _is(title) { self.store.footer-first-sep }
+          if _is(title) { title }
+        }),
+      )
+      place(
+        right + horizon,
+        dx: 1.2em,
+        text(fill: white, utils.call-or-display(self, context {
+          let current = int(utils.slide-counter.display())
+          let last = int(utils.last-slide-counter.display())
+          if current > last {
+            (text(self.store.footer-appendix-label, style: "italic") + str(current))
+          } else {
+            str(current)
+          }
+        })),
+      )
+    }),
+    image(dir + "/logoCNRS_alpha_2023.png", height: 5.2mm),
+    image(dir + "/logoINPG_alpha.png", height: 4.8mm),
+    image(dir + "/logoUGA_alpha.png", height: 6.2mm),
+  ))
+}
+
+/// Optional navigation bar (mini-slides), shown when `show-header` is true.
+#let gipsa-nav-bar(self) = {
   show: block.with(inset: (x: 5em))
   set text(size: 1.4em)
   place(
@@ -18,7 +84,25 @@
   )
 }
 
-/// Creates a normal slide with a title and body
+/// Frame title: Gipsa-lab logo on the left, title in the dark Gipsa blue,
+/// mimicking the `frametitle` template of the Beamer theme.
+#let _gipsa-frame-title(self) = {
+  grid(
+    columns: (auto, 1fr),
+    column-gutter: 0.8em,
+    align: horizon,
+    image(self.store.assets-dir + "/logoGipsalab_alpha_lr.png", height: 8mm),
+    text(
+      size: 1.35em,
+      weight: "bold",
+      fill: self.colors.dark,
+      utils.display-current-heading(depth: self.slide-level),
+    ),
+  )
+  v(0.6em)
+}
+
+/// Creates a normal slide with a title and body.
 #let slide(
   config: (:),
   repeat: auto,
@@ -26,93 +110,18 @@
   composer: auto,
   ..bodies,
 ) = touying-slide-wrapper(self => {
-  let footer(self) = {
-    let cell(body) = rect(
-      width: 100%,
-      height: 100%,
-      inset: 0mm,
-      outset: 0mm,
-      fill: none,
-      stroke: none,
-      text(size: 0.5em, fill: self.colors.black, body),
-    )
-
-    let author = self.info.author
-    let date = self.info.date
-    if self.store.footer-hide.contains("author") {
-      author = none
-    }
-
-    if self.store.footer-hide.contains("date") {
-      date = none
-    }
-
-    set align(center + horizon)
-    block(width: 101%, height: -25%, stroke: (top: 0.5pt + self.colors.black), {
-      set text(size: 1.5em)
-
-      // give priority to short, since long is also used in title slide
-      let title = self.info.title
-      if (self.info.short-title != auto) {
-        title = self.info.short-title
-      }
-
-      let first-col-width = auto
-      let second-col-width = 75%
-      if self.info.logo.func() == image {
-        first-col-width = 19%
-        second-col-width = 71.5%
-      }
-
-      grid(
-        columns: (first-col-width, second-col-width, 8.5%),
-        rows: 0.5em,
-        stroke: (x: 1pt + self.colors.black),
-        cell(box(self.info.logo, height: 100%)),
-        cell(box(
-          width: 100%,
-          text(
-            title, // either title or short-title
-            weight: "bold",
-          )
-            + self.store.footer-first-sep
-            + if _is(author) { author }
-            + if _is(date) and _is(author) {
-              self.store.footer-second-sep
-            } else { "" }
-            + if _is(date) { date },
-        )),
-        cell(utils.call-or-display(self, context {
-          let current = int(utils.slide-counter.display())
-          let last = int(utils.last-slide-counter.display())
-          if current > last {
-            (
-              text(self.store.footer-appendix-label, style: "italic")
-                + str(current)
-            )
-          } else {
-            str(current)
-          }
-        }
-          + " / "
-          + utils.last-slide-number)),
-      )
-    })
-  }
-
   let self = utils.merge-dicts(self, config-page(
     header: if self.store.show-header {
-      unistra-nav-bar(self)
+      gipsa-nav-bar(self)
     } else {
       none
     },
     footer: if self.store.show-footer {
-      footer
+      _gipsa-footer(self)
     } else {
       none
     },
-    // todo: change if no footer/header, etc.
-    margin: (x: 3em, y: 2em),
+    margin: (x: 3em, y: 2em, bottom: 2.2em),
   ))
 
   touying-slide(
@@ -125,37 +134,14 @@
   )
 })
 
-/// Creates a outline slide with outlined headings.
-///
-/// Example:
-///
-/// ```typst
-/// #outline-slide(title: "Outline")
-/// ```
-///
-/// - `title` (str): The title of the slide. Default: "Outline".
-///
-/// - `title-size` (length): The size of the title. Default: 1.5em.
-///
-/// - `title-margin` (length): The margin between the title and the content. Default: -0.5em.
-///
-/// - `content-size` (length): The size of the content. Default: 1.2em.
-///
-/// - `fill` (color): The fill color of the outline block. Default: nblue.D.
-///
-/// - `outset` (length): The outset of the outline block. Default: 30pt.
-///
-/// - `height` (ratio): The height of the outline block. Default: 80%.
-///
-/// - `radius` (ratio): The radius of the outline block. Default: 7%.
-///
-/// - `..args`: Additional arguments to pass to the outline.
+/// Creates an outline slide with outlined headings.
 #let outline-slide(
   title: utils.i18n-outline-title,
   title-size: 1.5em,
   title-margin: -0.5em,
   content-size: 1.2em,
-  fill: nblue.D,
+  fill: dark,
+  text-color: white,
   outset: 30pt,
   height: 80%,
   width: 100%,
@@ -166,6 +152,7 @@
     text(
       title-size,
       weight: "bold",
+      fill: text-color,
       title,
     )
 
@@ -177,8 +164,7 @@
       ..args,
     )
 
-    // We're increasing the width of the outline content slightly to compensate for the lesser width applied to the titles of focus slides.
-    // Otherwise, the outline content would be too narrow and would linebreak prematurely.
+    set text(fill: text-color)
     text(content-size, box(outline-content, width: width * 1.1))
   }
 
@@ -197,112 +183,155 @@
   slide(body)
 }
 
-/// Creates a title slide with a logo, title, subtitle, author, email, and date.
+/// Creates a title slide matching the official Gipsa-lab PowerPoint template
+/// (`template.pptx`): full-page wavy background ("fond") leaving a white strip
+/// at the bottom, main logo in the top left corner (inside the white corner of
+/// the fond), centered white title block (title, subtitle, author,
+/// institution), the date in the bottom left of the white strip, and the
+/// CNRS / INPG / UGA logos in the bottom right of the white strip.
 ///
-/// Example:
+/// On 16:9 decks the backgrounds extracted from the PowerPoint template are
+/// used; on 4:3 decks the original Beamer ones are used instead.
 ///
-/// ```typst
-/// #title-slide(title: "Override Title", logo: image("../assets/unistra.svg", width: 60%))
-/// ```
-///
-/// If no title or subtitle is provided, will use the info object.
-///
-/// - `title` (str): The title of the slide. Default: "".
-///
-/// - `subtitle` (str): The subtitle of the slide. Default: "".
-///
-/// - `logo` (content): Logo to display in the upper left corner of the slide. Default: "".
-///
-/// - `logos` (array): List of logos to display in a row in the upper left corner of the slide. Default: ().
-///
-/// - `..args`: Additional arguments to pass to the slide.
+/// - `title` (content): Override for the title. Default: "".
+/// - `subtitle` (content): Override for the subtitle. Default: "".
+/// - `logo` (content): Main logo, top left corner. Default: Gipsa-lab logo.
+/// - `fond` (content | str): Background image. Default: "court" fond if an
+///   institution is given, "long" otherwise (16:9 or 4:3 depending on the deck
+///   aspect ratio).
+/// - `hide` (array[str]): Info elements to hide ("date", "institution", ...).
 #let title-slide(
   title: "",
   subtitle: "",
   logo: "",
-  logos: (),
+  fond: auto,
   hide: (),
   ..args,
 ) = touying-slide-wrapper(self => {
   let info = self.info + args.named()
+  let dir = self.store.assets-dir
 
-  let nb-logos = logos.len()
-
-  if logo != "" and nb-logos > 0 {
-    panic("'logo' and 'logos' cannot be set at the same time.")
+  // Backgrounds from the PowerPoint template for 16:9 decks, original Beamer
+  // backgrounds for 4:3 decks.
+  let ratio = self.store.at("aspect-ratio", default: "16-9")
+  let (court, long) = if ratio == "16-9" {
+    (dir + "/fond_titre_16x9.png", dir + "/fond_titre_long_16x9.png")
+  } else {
+    (dir + "/fond_titre_court_4x3.png", dir + "/fond_titre_long_4x3.png")
   }
 
-  let logo-body = none
-  if nb-logos == 0 {
-    logo-body = logo
+  let fond-path = if fond == auto {
+    let institution = info.at("institution", default: none)
+    if institution != none and _is(institution) {
+      court
+    } else {
+      long
+    }
+  } else if type(fond) == str {
+    dir + "/" + fond
   } else {
-    logo-body = grid(
-      columns: if nb-logos > 0 {
-        nb-logos
-      } else {
-        1
-      },
-      ..(logos).map(logo => logo),
+    fond
+  }
+
+  // On 4:3 decks the white corner of the fond is smaller, so the logo needs a
+  // white box to not overlap the wavy pattern.
+  let main-logo = if logo != "" {
+    logo
+  } else if ratio == "16-9" {
+    image(dir + "/logoGipsalab_alpha_lr.png", height: 4.6em)
+  } else {
+    box(
+      fill: white,
+      inset: 1.2em,
+      radius: 1.5pt,
+      image(dir + "/logoGipsalab_alpha_lr.png", height: 4.6em),
     )
+  }
+
+  let date-cell = if "date" in info and "date" not in hide {
+    grid.cell(
+      align: left + horizon,
+      text(size: 0.53em, fill: footer-grey, utils.display-info-date(self)),
+    )
+  } else {
+    []
   }
 
   let body = {
-    set text(fill: white)
     set block(inset: 0mm, outset: 0mm, spacing: 0em)
     set align(top + left)
-    _gradientize(
-      self,
-      block(
-        fill: none,
-        width: 100%,
-        height: 100%,
-        inset: (left: 2em, top: 1em),
-        grid(
-          columns: 1fr,
-          rows: (6em, 6em, 4em, 4em),
-          logo-body,
-          _cell([
-            #text(size: 2em, weight: "bold", if (title != "") {
-              title
-            } else {
-              info.title
-            })
-            #linebreak()
-            #text(size: 1.7em, weight: "regular", if (subtitle != "") {
-              subtitle
-            } else {
-              info.subtitle
-            })
-          ]),
 
-          _cell([
-            #if ((none, "").all(x => x != info.subtitle)) {
-              linebreak()
-            }
-            #set text(size: 1.5em, fill: self.colors.white)
-            #text(weight: "bold", info.author)
-            #if "email" in info {
-              linebreak()
-              text(info.email, size: 0.8em)
-            }
-          ]),
-          if "date" not in hide {
-            _cell([
-              #set text(fill: self.colors.white.transparentize(25%))
-              #utils.display-info-date(self)
-            ])
-          },
-        ),
-      ),
-      c1: self.colors.nblue.E,
-      c2: self.colors.cyan.E,
-    )
+    block(fill: none, width: 100%, height: 100%, {
+      grid(
+        columns: (1fr,),
+        rows: (auto, 1fr, auto, auto),
+
+        // main logo, top left, inside the white corner of the fond
+        pad(left: 0.8em, top: 0.4em, main-logo),
+
+        // spacer
+        [],
+
+        // centered title block (title, subtitle, author, institution), like
+        // the centered placeholders of the PowerPoint template
+        grid.cell(pad(bottom: 0.8em, align(center, block(width: 85%, {
+          set align(center)
+          set text(fill: white)
+          set par(spacing: 0em, leading: 0em)
+          text(size: 2.3em, weight: "bold", if (title != "") {
+            title
+          } else {
+            info.title
+          })
+          if (none, "", auto).all(x => x != info.subtitle) {
+            v(0.45em)
+            text(size: 1.05em, info.subtitle)
+          }
+          if _is(info.author) {
+            v(0.4em)
+            text(size: 0.9em, info.author)
+          }
+          if "email" in info and _is(info.email) {
+            v(0.25em)
+            text(size: 0.8em, info.email)
+          }
+          if (
+            "institution" in info
+              and _is(info.institution)
+              and "institution" not in hide
+          ) {
+            v(0.25em)
+            text(size: 0.8em, info.institution)
+          }
+        })))),
+
+        // white strip: date on the left, partner logos on the right
+        pad(left: 0.5em, right: 0.2em, bottom: 0.15em, grid(
+          columns: (1fr, auto, auto, auto),
+          column-gutter: 1.5em,
+          align: bottom,
+          date-cell,
+          image(dir + "/logoCNRS_alpha_2023.png", height: 1.84em),
+          image(dir + "/logoINPG_alpha.png", height: 1.51em),
+          image(dir + "/logoUGA_alpha.png", height: 1.31em),
+        )),
+      )
+    })
   }
+
+  // The background ("fond") is drawn behind the slide, leaving a white strip
+  // at the bottom (9.07% of the page height) for the date and the partner
+  // logos, like the PowerPoint template.
+  let background = box(width: 100%, height: 100%, stack(
+    dir: ttb,
+    image(fond-path, width: 100%, height: 90.93%, fit: "stretch"),
+    rect(fill: white, width: 100%, height: 9.07%),
+  ))
 
   self = utils.merge-dicts(
     self,
     config-common(freeze-slide-counter: true),
-    config-page(margin: 0em),
+    config-page(margin: 0em, background: background),
     config-common(subslide-preamble: none),
   )
 
@@ -323,7 +352,7 @@
 /// ```
 ///
 /// ```typst
-/// #focus-slide(theme: "smoke")[Title]
+/// #focus-slide(theme: "red")[Title]
 /// ```
 ///
 /// - `c1` (color): The first color of the gradient. Default: none.
@@ -334,9 +363,9 @@
 ///
 /// - `text-size` (length): The size of the text. Default: 2em.
 ///
-/// - `theme` (str | int): The color theme name or ID (1-18) to use. Themes are defined in src/colors.typ. Default: none.
+/// - `theme` (str | int): The color theme name or ID to use. Themes are defined in src/colors.typ. Default: none.
 ///
-/// - `icon` (function): The icon to show above the text. Should be `us-icon()` or `nv-icon()`.
+/// - `icon` (function): The icon to show above the text.
 ///
 /// - `icon-size` (length): The size of the icon. Default: 1.7em.
 ///
@@ -445,18 +474,12 @@
             ),
             grid.cell(
               heading(
-                // we define a high level to avoid the outline slide
-                // displaying other types of headings
-                // that would be outlined by default
                 level: 99,
                 outlined: outlined,
                 bookmarked: outlined,
-                // Setting a box with a width slightly smaller than 100% to create some margin and more space for the text.
-                // This avoids having to linebreak manually to achieve that, as the linebreak would appear in the outline slide.
                 box(
                   width: 90%,
                   if (count-label != none) {
-                    // bold does not change anything on the focus-slide; used only for the outline slide
                     text(weight: "bold", count-label)
                   }
                     + body,
@@ -465,7 +488,6 @@
               align: center + top,
             ),
             columns: 1fr,
-            // add third auto row to allow automatic adjustement with longer text
             rows: (1.1fr, auto, 1fr),
             row-gutter: 0.43em,
             align: center + horizon,
@@ -489,58 +511,21 @@
 
 /// Creates a hero slide with a high width image, and optional title, subtitle, caption and text. The image can take all the space, or be on the left or right side.
 ///
-/// Examples:
-///
-/// ```typst
-/// #hero(
-/// image("../assets/unistra.svg", height: 70%),
-/// title: "Hero",
-/// subtitle: "Subtitle",
-/// )
-/// ```
-///
-/// ```typst
-/// #let custom-enhance = txt => text(size: 2em, weight: 900, fill: orange, txt)
-/// #hero(
-/// image("../assets/cat1.jpg", height: 100%, width: 100%),
-/// txt: (text: "Some text next to the image", enhanced: custom-enhance),
-/// direction: "rtl",
-/// )
-/// ```
-///
-/// - `title` (str): The title of the slide. Default: none.
+/// - `title` (content): The title of the slide. Default: none.
 ///
 /// - `heading-level` (int): The heading level of the title. Default: 1.
 ///
-/// - `subtitle` (str): The subtitle of the slide. Default: none.
+/// - `subtitle` (content): The subtitle of the slide. Default: none.
 ///
-/// - `caption` (str): The caption of the image. Default: none.
+/// - `caption` (content): The caption of the image. Default: none.
 ///
-/// - `bold-caption` (bool): Whether to make the caption bold. Default: false.
+/// - `columns` (int | relative | fraction | array): The columns of the grid. Default: (1fr, 2fr).
 ///
-/// - `numbering` (str): The numbering of the caption (figure). Default: none.
-///
-/// - `columns` (int | relative | fraction | array): The columns of the grid. Default: (1fr).
-///
-/// - `rows` (int | relative | fraction | array): The rows of the grid. Default: (1fr).
-///
-/// - `txt` (dict): The text to display next to the image, along with its style. Contains the following keys: text, enhanced, fill, align.
-///   - `text` (content): The text to display. Default: none.
-///   - `enhanced` (bool | function): Whether to enhance the text. Can pass a custom function that will act as a callback to enhance the text. Default: true.
-///   - `fill` (color): The fill color of the text. Default: none.
-///   - `align` (alignment): The alignment of the text. Default: horizon + center.
+/// - `txt` (dict): The text to display next to the image, along with its style.
 ///
 /// - `direction` (str): The direction of the image and text. Possible values: "ltr", "rtl", "utd", "dtu". Default: "ltr".
 ///
-/// - `gap` (int | relative | fraction | array): The gap between the image and text. Default: auto.
-///
 /// - `hide-footer` (bool): Whether to hide the footer. Default: true.
-///
-/// - `fill` (color): The fill color of the slide. Only works when `hide-footer` is true. Default: none.
-///
-/// - `inset` (length): How much negative inset should be applied to the slide to make the image take all the space. Only works when `hide-footer` is true and there is no title, subtitle or caption. Default: -25mm.
-///
-/// - `footnote` (bool): Whether to leave some width to accomodate for a footnote. Default: false.
 #let hero(
   title: none,
   heading-level: 1,
@@ -654,7 +639,6 @@
           create-image-cell(),
           create-text-cell(),
           column-gutter: gap,
-          // columns are reversed in this direction
           columns: (2fr, 1fr),
         )
       } else if direction == "utd" {
@@ -708,9 +692,6 @@
   if (title, subtitle, caption).all(x => x == none) {
     body = block(
       body,
-      // expand image as much as possible
-      // as it is the only content
-      // todo: calculate this automatically
       inset: inset,
     )
   }
@@ -721,42 +702,6 @@
 })
 
 /// Creates a gallery slide with a title and images.
-///
-/// Example:
-///
-/// ```typst
-/// #gallery(
-/// image("../assets/cat1.jpg"),
-/// image("../assets/cat2.jpg"),
-/// title: "Gallery",
-/// captions: (
-///   "Cat 1",
-///   "Cat 2",
-/// ),
-/// columns: 2
-/// ```
-///
-/// - `title` (str): The title of the gallery. Default: none.
-///
-/// - `heading-level` (int): The heading level of the title. Default: 2.
-///
-/// - `subtitle` (str): The subtitle of the gallery. Default: none.
-///
-/// - `columns` (int): The number of columns. Default: auto.
-///
-/// - `captions` (list[str]): The list of captions. Default: ().
-///
-/// - `bold-caption` (bool): Whether to make the captions bold. Default: true.
-///
-/// - `height` (length): The height of the images. Default: auto.
-///
-/// - `width` (length): The width of the images. Default: auto.
-///
-/// - `fit` (str): The fit of the images. Can be "cover", "stretch" or "contain". Default: "cover".
-///
-/// - `gutter` (int | relative | fraction | array): The gutter between the images. Default: 0.5em.
-///
-/// - `gap` (int | relative | fraction | array): The gap between the images. Default: 0.65em.
 #let gallery(
   title: none,
   heading-level: 2,
@@ -827,15 +772,11 @@
   touying-slide(self: self, body)
 })
 
-/// Registers the Unistra theme.
-#let unistra-theme(
+/// Registers the Gipsa-lab theme.
+#let gipsa-theme(
   aspect-ratio: "16-9",
   header: [],
   footer: [],
-  footer-info-2: self => {
-    [
-      #self.info.author | #utils.info-date(self)]
-  },
   ..args,
   body,
 ) = {
@@ -846,21 +787,13 @@
       white: white,
       black: black,
       grey: grey,
-      maroon: maroon,
-      brown: brown,
-      orange: orange,
+      dark: dark,
       red: red,
-      pink: pink,
-      purple: purple,
-      violet: violet,
-      nblue: nblue,
-      blue: blue,
-      cyan: cyan,
-      ngreen: ngreen,
-      green: green,
-      camo: camo,
       yellow: yellow,
-      primary: nblue.E,
+      blue: blue,
+      green: green,
+      primary: dark,
+      secondary: blue,
     ),
 
     config-page(
@@ -875,11 +808,7 @@
       focus-slide: focus-slide,
       gallery: gallery,
       hero: hero,
-      subslide-preamble: self => text(
-        1.5em,
-        weight: "bold",
-        utils.display-current-heading(depth: self.slide-level) + "\n",
-      ),
+      subslide-preamble: self => _gipsa-frame-title(self),
     ),
 
     config-store(
@@ -888,49 +817,31 @@
       colorthemes-ids: colorthemes-ids,
       show-header: false,
       show-footer: true,
+      // directory containing the Gipsa-lab logos and backgrounds
+      assets-dir: _assets-dir,
       // footer first separator
-      footer-first-sep: " | ",
+      footer-first-sep: " | ",
       // footer second separator
-      footer-second-sep: " | ",
+      footer-second-sep: " | ",
       footer-appendix-label: "A-",
-      font: ("Unistra A", "Segoe UI", "Roboto"),
+      // Carlito is metrically compatible with Calibri, the font used by the
+      // official PowerPoint template
+      font: ("Carlito", "Calibri", "Liberation Sans", "DejaVu Sans"),
+      // deck aspect ratio, used to pick matching backgrounds
+      aspect-ratio: aspect-ratio,
       // type of left/right quote to use for the custom "Quote" element
       quotes: (
-        left: "« ",
-        right: " »",
+        left: "« ",
+        right: " »",
         outset: 0.5em,
         margin-top: 0em,
       ),
-      // elements to hide from footer ("author", "date")
+      // elements to hide from footer ("author")
       footer-hide: (),
-      link-icons: (
-        "video": (
-          regex("\.(gif|mp4|avi|mov|webm|mkv)$"),
-          nv-icon("file-video"),
-        ),
-        "image": (
-          regex("\.(jpg|jpeg|png|bmp|svg|webp|tiff)$"),
-          nv-icon("picture-layer"),
-        ),
-        "audio": (regex("\.(mp3|wav|ogg|flac|m4a)$"), nv-icon("file-audio")),
-        "archive": (regex("\.(zip|tar|gz|bz2|xz)$"), nv-icon("folders")),
-        "code": (
-          regex(
-            "\.(css|js|ts|tsx|json|xml|yml|toml|ini|cfg|bat|sh|ps1|py|java|c|cpp|h|hpp|rs|go|php|rb|pl|swift)$",
-          ),
-          us-icon("code"),
-        ),
-        "facebook": (regex("(fb|facebook)\.com/"), nv-icon("facebook")),
-        "fa-github": (regex("github\.com/"), fa-icon("github")),
-        "pinterest": (regex("pinterest\.com/"), nv-icon("pinterest")),
-        "tumblr": (regex("tumblr\.com/"), nv-icon("tumblr")),
-        // do not use Nova's "youtube" icon, too old
-        // icon "play" is the closest to current logo
-        "youtube": (
-          regex("(youtube\.com|youtu\.be)/"),
-          nv-icon("video-control-play"),
-        ),
-      ),
+      // link icons are disabled by default: the Unistra icon fonts are not
+      // available at Gipsa-lab. Set link-icons to a dict of
+      // (regex, content) pairs to re-enable them.
+      link-icons: (:),
       link-icons-fa: true,
     ),
 
@@ -948,34 +859,31 @@
         set text(
           fill: black,
           font: self.store.font,
-          size: 25pt,
+          size: 20pt,
         )
         set outline(target: heading.where(level: 1), title: none)
         set outline.entry(fill: none)
-        set enum(numbering: n => [*#n;.*])
-        //set list(spacing: 1em)
-        // the default [‣] icon does not align properly
-        set list(marker: ([•], [--]))
+        set enum(numbering: n => text(fill: self.colors.red)[*#n.*])
+        set list(marker: text(fill: self.colors.red, [•]))
         set highlight(extent: 1pt)
 
         // shows
         show strong: self.methods.alert.with(self: self)
-        show footnote.entry: set text(size: 18pt)
+        show footnote.entry: set text(size: 13pt)
 
-        show heading.where(level: 1): set text(size: 1.5em, weight: "bold")
+        show heading.where(level: 1): set text(
+          size: 1.5em,
+          weight: "bold",
+          fill: self.colors.dark,
+        )
         show heading.where(level: 2): set block(below: 1.5em)
+
         // color and iconize links
         show link: it => context {
           // except for the outline slide
           if in-outline.get() {
             text(weight: "regular", it)
           } else {
-            let dest = if type(it.dest) == str {
-              it.dest
-            } else {
-              str(it.dest)
-            }
-
             let styled-link = text(
               link-color,
               underline.with(
@@ -984,26 +892,14 @@
               )(it),
             )
 
-            let active-link-icons = if self.store.link-icons-fa {
-              self.store.link-icons
-            } else {
-              // only include non-fa icons
-              self
-                .store
-                .link-icons
-                .pairs()
-                .filter(pair => {
-                  let (key, value) = pair
-                  (
-                    not key.starts-with("fa")
-                  )
-                })
-                .to-dict()
-            }
-
-            if active-link-icons.len() > 0 {
+            if self.store.link-icons.len() > 0 {
+              let dest = if type(it.dest) == str {
+                it.dest
+              } else {
+                str(it.dest)
+              }
               let found = none
-              for pair in active-link-icons.values() {
+              for pair in self.store.link-icons.values() {
                 let (pattern, icon) = pair
                 if dest.matches(pattern).len() > 0 {
                   found = icon
@@ -1039,7 +935,7 @@
           in-outline.update(false)
         }
         // bibliography
-        show bibliography: set text(size: 15pt)
+        show bibliography: set text(size: 14pt)
         show bibliography: set par(spacing: 0.5em, leading: 0.4em)
         show bibliography: it => {
           // fixes https://github.com/typst/hayagriva/issues/114
