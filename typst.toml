@@ -13,7 +13,13 @@ keywords = ["touying", "gipsa", "gipsa-lab", "presentation", "slides", "diaporam
 categories = ["presentation"]
 disciplines = []
 compiler = "0.15.0"
-exclude = []
+# Keep the published package lean: theme sources, Gipsa assets, and the
+# `typst init` template only.
+exclude = [
+  "examples",
+  "scripts",
+  "*.pdf",
+]
 
 [template]
 path = "template"

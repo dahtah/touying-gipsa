@@ -1,17 +1,16 @@
-#import "@preview/touying:0.6.2": *
-#import "@preview/touying-unistra-pristine:1.4.3": *
+#import "@preview/touying-gipsa:0.1.0": *
 
-#show: unistra-theme.with(
+#show: gipsa-theme.with(
   aspect-ratio: "16-9",
   config-info(
     title: [Title],
     author: [Author],
-    date: datetime.today().display("[month repr:long] [day], [year repr:full]"),
-    logo: image("unistrafooter.svg"),
+    institution: [GIPSA-Lab, UMR 5216 CNRS UGA],
+    date: datetime.today().display("[year]-[month]-[day]"),
   ),
 )
 
-#title-slide(logo: image("unistra.svg"))
+#title-slide()
 
 = Example Section Title
 
@@ -19,9 +18,6 @@
 
 A slide with *important information*.
 
-#focus-slide(
-  theme: "neon",
-  [
-    This is a focus slide \ with theme "neon"
-  ],
-)
+#focus-slide(theme: "blue")[
+  A focus slide with theme "blue"
+]
